@@ -1,0 +1,30 @@
+Get http://localhost:3000/api/users
+
+###
+
+POST http://localhost:3000/api/users HTTP/1.1
+content-type: application/json
+
+{
+  "username": "fist",
+  "email": "firt@example.com",
+  "password": "test123",
+  "firstName": "first",
+  "lastName": "last"
+}
+###
+
+PATCH  http://localhost:3000/api/users/67e550c1812bdaad8d2b45d2 HTTP/1.1
+content-type: application/json
+
+{
+  "username": "test-update",
+  "email": "test1@example.com"
+}
+
+
+###
+Get http://localhost:3000/api/users/67e55079812bdaad8d2b45ce
+
+###
+DELETE http://localhost:3000/api/users/67e55079812bdaad8d2b45ce
