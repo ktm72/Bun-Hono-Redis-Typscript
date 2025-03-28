@@ -6,25 +6,25 @@ POST http://localhost:3000/api/users HTTP/1.1
 content-type: application/json
 
 {
-  "username": "fist",
-  "email": "firt@example.com",
-  "password": "test123",
+  "username": "first",
+  "email": "first@example.com",
+  "password": "first123",
   "firstName": "first",
   "lastName": "last"
 }
 ###
 
-PATCH  http://localhost:3000/api/users/67e550c1812bdaad8d2b45d2 HTTP/1.1
+PATCH  http://localhost:3000/api/users/67e6dd82f972bbf6bf76f8c2 HTTP/1.1
 content-type: application/json
 
 {
-  "username": "test-update",
-  "email": "test1@example.com"
+  "username": "first-update",
+  "email": "first-update@example.com"
 }
 
 
 ###
-Get http://localhost:3000/api/users/67e55079812bdaad8d2b45ce
+Get http://localhost:3000/api/users/67e6dd82f972bbf6bf76f8c2
 
 ###
-DELETE http://localhost:3000/api/users/67e55079812bdaad8d2b45ce
+DELETE http://localhost:3000/api/users/67e6cdb77ea5db86154c95e4
