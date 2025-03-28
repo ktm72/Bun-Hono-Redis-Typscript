@@ -49,13 +49,6 @@ const userSchema = new Schema<IUserDocument>({
   }
 });
 
-// Update the updatedAt field before saving
-// userSchema.pre<IUserDocument>('save', function(next) {
-//   this.updatedAt = new Date();
-//   next();
-// });
-
-// export const UserModel = model<IUserDocument>('User', userSchema);
 // Function to determine collection name based on username
 function getUserCollectionName(username: string): string {
   const firstChar = username.toLowerCase().charCodeAt(0);

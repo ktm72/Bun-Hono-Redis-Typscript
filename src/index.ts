@@ -4,6 +4,7 @@ import { cors } from 'hono/cors';
 import dotenv from 'dotenv';
 import { initializeDatabase, disconnectDatabase } from './config/db';
 import userRoutes from './routes/userRoutes';
+import storageRoute from './routes/StorageRoute';
 
 const app = new Hono();
 // Middleware
@@ -12,7 +13,10 @@ app.use('*', cors());
 app.use('*', logger());
 
 // Routes
-app.basePath('/api').route('/users', userRoutes);
+app
+  .basePath('/api')
+  .route('/users', userRoutes)
+  .route('/storage', storageRoute);
 
 // Database and Server
 async function startServer() {
@@ -29,6 +33,7 @@ async function startServer() {
 
 startServer().catch((err) => {
   console.error('Failed to start server:', err);
+  disconnectDatabase();
   process.exit(1);
 });
 

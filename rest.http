@@ -28,3 +28,8 @@ Get http://localhost:3000/api/users/67e6dd82f972bbf6bf76f8c2
 
 ###
 DELETE http://localhost:3000/api/users/67e6cdb77ea5db86154c95e4
+
+
+### Get storage
+Get http://localhost:3000/api/storage
+
