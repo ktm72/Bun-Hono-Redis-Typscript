@@ -24,7 +24,7 @@ export async function getUserById(c: Context) {
     const cachedUser = await getCache(id);
     if (!cachedUser) {
       const user = await User.findUserById(id);
-      await setCache(id, user, 30);
+      await setCache(id, user, 60 * 30);
       return c.json(user);
     } else {
       return c.json(cachedUser);

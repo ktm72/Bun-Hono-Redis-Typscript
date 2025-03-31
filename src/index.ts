@@ -25,10 +25,13 @@ async function startServer() {
   const port = parseInt(process.env.PORT || '3000');
   const server = Bun.serve({
     port,
-    fetch: app.fetch
+    fetch: app.fetch,
+    reusePort: true
   });
 
-  console.log(`Server running on http://localhost:${server.port}`);
+  console.log(
+    `Server running on http://localhost:${server.port} with process - ${process.pid}`
+  );
 }
 
 startServer().catch((err) => {

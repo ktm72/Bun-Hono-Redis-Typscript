@@ -1,6 +1,7 @@
 import { createClient, type RedisClientType } from 'redis';
 
-let redisClient: RedisClientType | null = null;
+export type ClientType = RedisClientType | null;
+let redisClient: ClientType = null;
 
 // Connection configuration
 interface RedisConfig {
@@ -39,6 +40,8 @@ const createRedisClient = (): RedisClientType => {
       error: err.message,
       stack: err.stack
     });
+
+    closeRedisClient(client);
   });
 
   client.on('connect', () => {
@@ -70,12 +73,13 @@ export const getRedisClient = async (): Promise<RedisClientType> => {
   return redisClient;
 };
 
-export const closeRedisClient = async (): Promise<void> => {
-  if (redisClient) {
+export const closeRedisClient = async (client: ClientType): Promise<void> => {
+  if (client !== null) {
     try {
-      await redisClient.disconnect();
+      await client.disconnect();
       console.log('Redis client disconnected gracefully');
     } catch (err) {
+      client = null;
       console.log('Error while disconnecting Redis client', { error: err });
     } finally {
       redisClient = null;
@@ -85,11 +89,11 @@ export const closeRedisClient = async (): Promise<void> => {
 
 // Graceful shutdown handler
 process.on('SIGTERM', async () => {
-  await closeRedisClient();
+  await closeRedisClient(redisClient);
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  await closeRedisClient();
+  await closeRedisClient(redisClient);
   process.exit(0);
 });

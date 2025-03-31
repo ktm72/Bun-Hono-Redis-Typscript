@@ -7,7 +7,18 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "bun --watch src/index.ts",
-    "dev1": "bun --watch src_class_based/index.ts"
+    "dev1": "bun --watch src_class_based/index.ts",
+    "cluster": "bun --watch ./src/cluster.ts",
+    "pm2-cluster": "pm2 start ./src/index.ts",
+    "start-all": "pm2 start ./src/index.ts -i -1",
+    "stop": "pm2 stop ./src/index.ts",
+    "delete": "pm2 delete ./src/index.ts",
+    "restart": "pm2 restart ./src/index.ts",
+    "list": "pm2 list",
+    "logs": "pm2 logs ./src/index.ts",
+    "monit": "pm2 monit",
+    "status": "pm2 status",
+    "loadtest": "loadtest -n 100 -c 20 http://localhost:3000/api/users/67e6dd82f972bbf6bf76f8c2"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
@@ -15,6 +26,7 @@
     "mongodb": "^6.15.0",
     "mongoose": "^8.13.0",
     "node-cron": "^3.0.3",
+    "pm2": "^6.0.5",
     "redis": "^4.7.0",
     "zod": "^3.24.2"
   },
@@ -22,6 +34,7 @@
     "@types/bun": "latest",
     "@types/mongodb": "^4.0.7",
     "@types/node-cron": "^3.0.11",
+    "loadtest": "^8.2.0",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2"
   },

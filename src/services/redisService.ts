@@ -1,4 +1,8 @@
-import { getRedisClient, closeRedisClient } from '../config/redis';
+import {
+  getRedisClient,
+  closeRedisClient,
+  type ClientType
+} from '../config/redis';
 import { type RedisClientType } from 'redis';
 
 const DEFAULT_TTL = 3600 * 24; // 24 hour in seconds
@@ -8,11 +12,12 @@ const withRedis = async <T>(
   operation: string,
   fn: (client: RedisClientType) => Promise<T>
 ): Promise<T> => {
-  const client = await getRedisClient();
+  let client: ClientType = null;
   try {
-    console.log(`Redis ${operation} starting`);
+    client = await getRedisClient();
+    // console.log(`Redis ${operation} starting`);
     const result = await fn(client);
-    console.log(`Redis ${operation} operation closed`);
+    // console.log(`Redis ${operation} operation closed`);
     return result;
   } catch (error) {
     console.error(`Redis ${operation} failed:`, {
@@ -22,7 +27,10 @@ const withRedis = async <T>(
     });
     throw error; // Re-throw after logging
   } finally {
-    closeRedisClient();
+    // unlock while distributed processes
+    if (client) {
+      await closeRedisClient(client);
+    }
   }
 };
 
@@ -35,7 +43,7 @@ export const getCache = async <T>(key: string): Promise<T | null> => {
       return null;
     }
     const data = await client.get(key);
-    console.log(`Cache ${data ? 'hit' : 'miss'} for key: ${key}`);
+    // console.log(`Cache ${data ? 'hit' : 'miss'} for key: ${key}`);
     return data ? JSON.parse(data) : null;
   });
 };

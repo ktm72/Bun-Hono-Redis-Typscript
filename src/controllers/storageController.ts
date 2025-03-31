@@ -31,7 +31,8 @@ export async function checkDatabaseStorage(c: Context) {
     {
       used: storageSizeKB,
       TotalSpace: totalSizeKB,
-      usage: `${usedPercentage.toFixed(2)} %`
+      usage: `${usedPercentage.toFixed(2)} %`,
+      process: process.pid
     },
     200
   );

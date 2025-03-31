@@ -17,7 +17,8 @@ export async function disconnectDatabase() {
   await mongoose.disconnect();
 }
 
-cron.schedule('*/10 0 * * *', async () => {
+// runs everyday 6 AM
+cron.schedule('0 6 * * *', async () => {
   // Runs at midnight every day
   const db = mongoose.connection.db as Db;
   const stats = await db.stats();
