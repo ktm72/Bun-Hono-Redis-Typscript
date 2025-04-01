@@ -24,7 +24,7 @@ content-type: application/json
 
 
 ###
-Get http://localhost:3000/api/users/67e6dd82f972bbf6bf76f8c2
+Get http://localhost:39735/api/users/67e6dd82f972bbf6bf76f8c2
 
 ###
 DELETE http://localhost:3000/api/users/67e6cdb77ea5db86154c95e4

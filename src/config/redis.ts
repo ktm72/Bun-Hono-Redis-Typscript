@@ -1,7 +1,11 @@
 import { createClient, type RedisClientType } from 'redis';
+import { createPool } from 'generic-pool';
 
 export type ClientType = RedisClientType | null;
-let redisClient: ClientType = null;
+// let redisClient: ClientType = null;
+
+// Define a proper type for your Redis client
+export type RedisClient = RedisClientType<any, any, any>;
 
 // Connection configuration
 interface RedisConfig {
@@ -32,68 +36,108 @@ const getRedisConfig = (): RedisConfig => ({
   }
 });
 
-const createRedisClient = (): RedisClientType => {
-  const client = createClient(getRedisConfig()) as RedisClientType;
-
-  client.on('error', (err: Error) => {
-    console.error('Redis client error', {
-      error: err.message,
-      stack: err.stack
-    });
-
-    closeRedisClient(client);
-  });
-
-  client.on('connect', () => {
-    console.log('Redis client connected');
-  });
-
-  client.on('reconnecting', () => {
-    console.log('Redis client reconnecting');
-  });
-
-  client.on('end', () => {
-    console.log('Redis client connection closed');
-  });
-
-  return client;
-};
-
-export const getRedisClient = async (): Promise<RedisClientType> => {
-  if (!redisClient) {
-    redisClient = createRedisClient();
-    try {
-      await redisClient.connect();
-    } catch (err) {
-      redisClient = null;
-      throw err;
-    }
-  }
-
-  return redisClient;
-};
-
-export const closeRedisClient = async (client: ClientType): Promise<void> => {
-  if (client !== null) {
-    try {
-      await client.disconnect();
-      console.log('Redis client disconnected gracefully');
-    } catch (err) {
-      client = null;
-      console.log('Error while disconnecting Redis client', { error: err });
-    } finally {
-      redisClient = null;
-    }
+// Update your pool creation to use the proper type
+const RedisConfig = {
+  create: async () => {
+    const client = createClient(getRedisConfig());
+    await client.connect();
+    return client;
+  },
+  destroy: async (client: RedisClient) => {
+    await client.disconnect().catch((err: Error) =>
+      console.error('Redis client error', {
+        error: err.message,
+        stack: err.stack
+      })
+    );
   }
 };
+
+const pool = createPool(RedisConfig, {
+  min: 1,
+  max: 5, // Adjust based on your expected load
+  acquireTimeoutMillis: 5000,
+  idleTimeoutMillis: 30000
+});
+
+interface RedisPool {
+  acquire: () => Promise<RedisClient>;
+  release: (client: RedisClient) => Promise<void>;
+}
+
+export const RedisPool = {
+  acquire: () => pool.acquire(),
+  release: (client: RedisClient) => pool.release(client)
+} satisfies RedisPool;
+
+// const createRedisClient = (): RedisClientType => {
+//   const client = createClient(getRedisConfig()) as RedisClientType;
+
+//   client.on('error', (err: Error) => {
+//     console.error('Redis client error', {
+//       error: err.message,
+//       stack: err.stack
+//     });
+
+//     closeRedisClient(client);
+//   });
+
+//   client.on('connect', () => {
+//     console.log('Redis client connected');
+//   });
+
+//   client.on('reconnecting', () => {
+//     console.log('Redis client reconnecting');
+//   });
+
+//   client.on('end', () => {
+//     console.log('Redis client connection closed');
+//   });
+
+//   return client;
+// };
+
+// export const getRedisClient = async (): Promise<RedisClientType> => {
+//   if (!redisClient) {
+//     redisClient = createRedisClient();
+//     try {
+//       await redisClient.connect();
+//     } catch (err) {
+//       redisClient = null;
+//       throw err;
+//     }
+//   }
+
+//   return redisClient;
+// };
+
+// export const closeRedisClient = async (client: ClientType): Promise<void> => {
+//   if (client !== null) {
+//     try {
+//       await client.disconnect();
+//       console.log('Redis client disconnected gracefully');
+//     } catch (err) {
+//       client = null;
+//       console.log('Error while disconnecting Redis client', { error: err });
+//     } finally {
+//       redisClient = null;
+//     }
+//   }
+// };
 
 // Graceful shutdown handler
 process.on('SIGTERM', async () => {
-  await closeRedisClient(redisClient);
+  const client = await RedisPool.acquire();
+  await RedisPool.release(client);
+  console.log('Redis client disconnected gracefully');
+  // await closeRedisClient(redisClient);
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  await closeRedisClient(redisClient);
+  // await closeRedisClient(redisClient);
+  const client = await RedisPool.acquire();
+  await RedisPool.release(client);
+  console.log('Redis client disconnected gracefully');
   process.exit(0);
 });

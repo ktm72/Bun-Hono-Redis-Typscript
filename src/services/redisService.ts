@@ -1,7 +1,9 @@
 import {
-  getRedisClient,
-  closeRedisClient,
-  type ClientType
+  // getRedisClient,
+  // closeRedisClient,
+  RedisPool,
+  // type ClientType,
+  type RedisClient
 } from '../config/redis';
 import { type RedisClientType } from 'redis';
 
@@ -10,11 +12,11 @@ const DEFAULT_TTL = 3600 * 24; // 24 hour in seconds
 // Higher-order function for error handling
 const withRedis = async <T>(
   operation: string,
-  fn: (client: RedisClientType) => Promise<T>
+  fn: (client: RedisClient) => Promise<T>
 ): Promise<T> => {
-  let client: ClientType = null;
+  let client: RedisClient | null = null;
   try {
-    client = await getRedisClient();
+    client = await RedisPool.acquire();
     // console.log(`Redis ${operation} starting`);
     const result = await fn(client);
     // console.log(`Redis ${operation} operation closed`);
@@ -29,7 +31,7 @@ const withRedis = async <T>(
   } finally {
     // unlock while distributed processes
     if (client) {
-      await closeRedisClient(client);
+      await RedisPool.release(client).catch((error) => console.log(error));
     }
   }
 };
