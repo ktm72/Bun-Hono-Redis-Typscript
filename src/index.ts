@@ -5,12 +5,14 @@ import dotenv from 'dotenv';
 import { initializeDatabase, disconnectDatabase } from './config/db';
 import userRoutes from './routes/userRoutes';
 import storageRoute from './routes/StorageRoute';
+import { globalErrorMiddleware } from './middlewares/errorMiddleware';
 
 const app = new Hono();
 // Middleware
 dotenv.config();
 app.use('*', cors());
 app.use('*', logger());
+app.use(globalErrorMiddleware());
 
 // Routes
 app

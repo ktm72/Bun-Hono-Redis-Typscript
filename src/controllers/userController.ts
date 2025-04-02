@@ -1,58 +1,45 @@
 import { type Context } from 'hono';
 import User from '../services/userServices';
 import { setCache, getCache, deleteCache } from '../services/redisService';
-import { errorHandler } from '../middlewares/errorMiddleware';
+import { withErrorHandling } from '../middlewares/errorMiddleware';
 
-export async function createUser(c: Context) {
+export const createUser = withErrorHandling(async (c: Context) => {
   const data = await c.req.json();
-  try {
-    const user = await User.createUser(data);
-    return c.json(user, 201);
-  } catch (error) {
-    return errorHandler(error, c);
-  }
-}
+  const user = await User.createUser(data);
+  return c.json({ result: user, message: 'user created successfully!' }, 201);
+}, 400);
 
-export async function getAllUsers(c: Context) {
+export const getAllUsers = withErrorHandling(async (c: Context) => {
   const users = await User.findAllUsers();
-  return c.json(users);
-}
+  return c.json({ result: users, message: 'users retrived successfully!' });
+}, 500);
 
-export async function getUserById(c: Context) {
+export const getUserById = withErrorHandling(async (c: Context) => {
   const id = c.req.param('id');
-  try {
-    const cachedUser = await getCache(id);
-    if (!cachedUser) {
-      const user = await User.findUserById(id);
-      await setCache(id, user, 60 * 30);
-      return c.json(user);
-    } else {
-      return c.json(cachedUser);
-    }
-  } catch (error) {
-    return errorHandler(error, c, 400);
+  const cachedUser = await getCache(id);
+  if (!cachedUser) {
+    const user = await User.findUserById(id);
+    await setCache(id, user, 60 * 30);
+    return c.json({ result: user, message: 'user retrived successfully!' });
+  } else {
+    return c.json({
+      result: cachedUser,
+      message: 'user retrived successfully!'
+    });
   }
-}
+}, 400);
 
-export async function updateUser(c: Context) {
+export const updateUser = withErrorHandling(async (c: Context) => {
   const id = c.req.param('id');
   const data = await c.req.json();
-  try {
-    const user = await User.updateUser(id, data);
-    await deleteCache(id);
-    return c.json(user);
-  } catch (error) {
-    return errorHandler(error, c, 404);
-  }
-}
+  const user = await User.updateUser(id, data);
+  await deleteCache(id);
+  return c.json({ result: user, message: 'user updated successfully!' });
+}, 404);
 
-export async function deleteUser(c: Context) {
+export const deleteUser = withErrorHandling(async (c: Context) => {
   const id = c.req.param('id');
-  try {
-    await User.deleteUser(id);
-    await deleteCache(id);
-    return c.json({ message: 'User deleted successfully' });
-  } catch (error) {
-    return errorHandler(error, c, 400);
-  }
-}
+  await User.deleteUser(id);
+  await deleteCache(id);
+  return c.json({ result: id, message: 'User deleted successfully' });
+}, 400);

@@ -2,13 +2,11 @@ export default {
   apps: [
     {
       name: 'bun-app',
-      script: 'index.ts', // Directly call bun
-      args: 'run', // Explicit path
+      script: 'src/index.ts',
       cwd: process.cwd(), // Essential for ES modules
-      interpreter: 'bun', // Disable PM2's interpreter
+      interpreter: 'bun',
       env: {
-        PATH: `${process.env.HOME}/.bun/bin:${process.env.PATH}`,
-        NODE_ENV: 'production'
+        PATH: `${process.env.HOME}/.bun/bin:${process.env.PATH}`
       },
       autorestart: true,
       instances: 1, // Start with single instance

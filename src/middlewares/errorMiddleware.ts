@@ -1,4 +1,5 @@
-import { type Context } from 'hono';
+// src/utils/error-handler.ts
+import { type Context, type Next } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
 type ErrorWithName = Error & {
@@ -9,9 +10,9 @@ type ErrorWithName = Error & {
 export async function errorHandler(
   error: unknown,
   c: Context,
-  code: number = 500
+  defaultCode: number = 500
 ) {
-  let status = code;
+  let status = defaultCode;
   let message = 'Internal server error';
   let details = null;
 
@@ -28,11 +29,43 @@ export async function errorHandler(
           message: e.message
         }));
       }
+    } else if (err.name === 'MongoServerError') {
+      status = 409;
+      message = err.message;
     }
+    // else if (err.code === '23505') { // PostgreSQL unique violation
+    //   status = 409;
+    //   message = 'Resource already exists';
+    // }
+    // Add more error types as needed
   }
 
   return c.json(
     { error: message, ...(details && { details }) },
     status as ContentfulStatusCode
   );
+}
+
+// Helper function to wrap controller functions
+export function withErrorHandling(
+  controllerFn: (c: Context) => Promise<Response>,
+  defaultErrorCode: number = 500
+) {
+  return async (c: Context) => {
+    try {
+      return await controllerFn(c);
+    } catch (error) {
+      return errorHandler(error, c, defaultErrorCode);
+    }
+  };
+}
+
+export function globalErrorMiddleware() {
+  return async (c: Context, next: Next) => {
+    try {
+      await next(); // Pass control to the next middleware/route
+    } catch (error) {
+      return errorHandler(error, c);
+    }
+  };
 }
