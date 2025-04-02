@@ -1,7 +1,7 @@
 import { type Context } from 'hono';
 import User from '../services/userServices';
 import { setCache, getCache, deleteCache } from '../services/redisService';
-import { withErrorHandling } from '../middlewares/errorMiddleware';
+import { withErrorHandling } from '../utils/error-handler';
 
 export const createUser = withErrorHandling(async (c: Context) => {
   const data = c.get('validatedData');

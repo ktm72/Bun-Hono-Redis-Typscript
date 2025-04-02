@@ -53,8 +53,10 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', async (err) => {
   console.error('Uncaught Exception:', err);
+  await disconnectDatabase();
+  process.exit(0);
 });
 
 process.on('unhandledRejection', (reason, promise) => {

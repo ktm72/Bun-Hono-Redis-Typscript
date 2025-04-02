@@ -1,5 +1,6 @@
 import { createClient, type RedisClientType } from 'redis';
 import { createPool } from 'generic-pool';
+const cpus = navigator.hardwareConcurrency;
 
 export type ClientType = RedisClientType | null;
 
@@ -56,7 +57,7 @@ const RedisConfig = {
 
 const pool = createPool(RedisConfig, {
   min: 1,
-  max: 5, // Adjust based on your expected load
+  max: cpus, // Adjust based on your expected load
   acquireTimeoutMillis: 5000,
   idleTimeoutMillis: 30000
 });

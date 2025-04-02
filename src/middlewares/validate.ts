@@ -1,6 +1,6 @@
 import { ZodSchema } from 'zod';
 import { type Context, type Next } from 'hono';
-import { errorHandler } from './errorMiddleware';
+import { errorHandler } from '../utils/error-handler';
 
 export const validate =
   (schema: ZodSchema) => async (c: Context, next: Next) => {

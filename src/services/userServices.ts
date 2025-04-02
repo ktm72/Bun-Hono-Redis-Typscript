@@ -1,6 +1,6 @@
 import { getUserModel } from '../models/userModel';
 import { type User, type UserResponse } from '../entities/userEntity';
-import { NotFoundError } from '../middlewares/errorMiddleware';
+import { NotFoundError } from '../utils/error-handler';
 
 async function createUser(user: User): Promise<UserResponse> {
   const model = getUserModel(user.username);
@@ -62,7 +62,7 @@ async function deleteUser(id: string) {
   const model = getUserModel(existingUser.username);
   const result = await model.deleteOne({ _id: id });
   if (result.deletedCount === 0) {
-    throw new NotFoundError('User not found');
+    throw new Error('User not found');
   }
 }
 
