@@ -2,10 +2,10 @@ import { createClient, type RedisClientType } from 'redis';
 import { createPool } from 'generic-pool';
 
 export type ClientType = RedisClientType | null;
-// let redisClient: ClientType = null;
 
 // Define a proper type for your Redis client
 export type RedisClient = RedisClientType<any, any, any>;
+let redisClient: RedisClient;
 
 // Connection configuration
 interface RedisConfig {
@@ -41,6 +41,7 @@ const RedisConfig = {
   create: async () => {
     const client = createClient(getRedisConfig());
     await client.connect();
+    redisClient = client;
     return client;
   },
   destroy: async (client: RedisClient) => {
@@ -126,18 +127,16 @@ export const RedisPool = {
 // };
 
 // Graceful shutdown handler
-process.on('SIGTERM', async () => {
-  const client = await RedisPool.acquire();
-  await RedisPool.release(client);
+const kill = async (code = 0) => {
+  if (redisClient) await RedisPool.release(redisClient);
   console.log('Redis client disconnected gracefully');
   // await closeRedisClient(redisClient);
-  process.exit(0);
-});
+  process.exit(code);
+};
 
-process.on('SIGINT', async () => {
-  // await closeRedisClient(redisClient);
-  const client = await RedisPool.acquire();
-  await RedisPool.release(client);
-  console.log('Redis client disconnected gracefully');
-  process.exit(0);
+process.on('SIGTERM', kill);
+process.on('SIGINT', kill);
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  kill();
 });

@@ -6,10 +6,12 @@ import {
   updateUser,
   deleteUser
 } from '../controllers/userController';
+import { validate } from '../middlewares/validate';
+import { UserCreateSchema } from '../entities/userEntity';
 
 const router = new Hono();
 
-router.post('/', createUser);
+router.post('/', validate(UserCreateSchema), createUser);
 router.get('/', getAllUsers);
 router.get('/:id', getUserById);
 router.patch('/:id', updateUser);

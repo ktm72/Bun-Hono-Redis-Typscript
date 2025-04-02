@@ -7,6 +7,13 @@ type ErrorWithName = Error & {
   errors?: Record<string, { path: string; message: string }>;
 };
 
+export class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
 export async function errorHandler(
   error: unknown,
   c: Context,
@@ -31,22 +38,19 @@ export async function errorHandler(
       }
     } else if (err.name === 'MongoServerError') {
       status = 409;
-      message = err.message;
+    } else if (err.name === 'NotFoundError') {
+      status = 404;
     }
-    // else if (err.code === '23505') { // PostgreSQL unique violation
-    //   status = 409;
-    //   message = 'Resource already exists';
-    // }
     // Add more error types as needed
   }
 
   return c.json(
-    { error: message, ...(details && { details }) },
+    { error: message, success: false, ...(details && { details }) },
     status as ContentfulStatusCode
   );
 }
 
-// Helper function to wrap controller functions
+// Higher order function
 export function withErrorHandling(
   controllerFn: (c: Context) => Promise<Response>,
   defaultErrorCode: number = 500

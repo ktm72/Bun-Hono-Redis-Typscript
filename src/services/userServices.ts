@@ -1,5 +1,6 @@
 import { getUserModel } from '../models/userModel';
 import { type User, type UserResponse } from '../entities/userEntity';
+import { NotFoundError } from '../middlewares/errorMiddleware';
 
 async function createUser(user: User): Promise<UserResponse> {
   const model = getUserModel(user.username);
@@ -31,14 +32,14 @@ async function findUserById(id: string) {
   ]);
 
   const user = userAN || userMZ;
-  if (!user) throw new Error('User not found');
+  if (!user) throw new NotFoundError('User not found');
   return toDomainEntity(user);
 }
 
 async function updateUser(id: string, user: Partial<User>) {
   // First find the user to know which collection they're in
   const existingUser = await findUserById(id);
-  if (!existingUser) throw new Error('User not found');
+  if (!existingUser) throw new NotFoundError('User not found');
 
   const model = getUserModel(existingUser.username);
   const updatedUser = await model
@@ -56,12 +57,12 @@ async function updateUser(id: string, user: Partial<User>) {
 async function deleteUser(id: string) {
   // First find the user to know which collection they're in
   const existingUser = await findUserById(id);
-  if (!existingUser) throw new Error('User not found');
+  if (!existingUser) throw new NotFoundError('User not found');
 
   const model = getUserModel(existingUser.username);
   const result = await model.deleteOne({ _id: id });
   if (result.deletedCount === 0) {
-    throw new Error('User not found');
+    throw new NotFoundError('User not found');
   }
 }
 

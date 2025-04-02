@@ -1,13 +1,15 @@
 import { z } from 'zod';
 
 // Base schema with all fields
-const UserBaseSchema = z.object({
-  username: z.string().min(3),
-  email: z.string().email(),
-  password: z.string().min(6),
-  firstName: z.string().optional(),
-  lastName: z.string().optional()
-});
+const UserBaseSchema = z
+  .object({
+    username: z.string().min(3),
+    email: z.string().email(),
+    password: z.string().min(6),
+    firstName: z.string().optional(),
+    lastName: z.string().optional()
+  })
+  .strict();
 
 // Schema for creation (without generated fields)
 export const UserCreateSchema = UserBaseSchema;

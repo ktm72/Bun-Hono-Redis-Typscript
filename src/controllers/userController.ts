@@ -4,7 +4,7 @@ import { setCache, getCache, deleteCache } from '../services/redisService';
 import { withErrorHandling } from '../middlewares/errorMiddleware';
 
 export const createUser = withErrorHandling(async (c: Context) => {
-  const data = await c.req.json();
+  const data = c.get('validatedData');
   const user = await User.createUser(data);
   return c.json({ result: user, message: 'user created successfully!' }, 201);
 }, 400);
